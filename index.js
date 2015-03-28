@@ -109,7 +109,11 @@ function getCountsForPackage(packageUrl) {
 
     var $stats = $(body).find('.sidebar ul').eq(1).find('li').slice(0, 3);
     var getCountForIndex = function(idx) {
-      return parseInt($stats.get(idx).textContent, 10);
+      try {
+        return parseInt($stats.get(idx).textContent, 10);
+      } catch(e) {
+        return 0;
+      }
     };
 
     var counts = {
