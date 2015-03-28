@@ -107,10 +107,12 @@ function getCountsForPackage(packageUrl) {
       return;
     }
 
-    var $stats = $(body).find('.sidebar ul').eq(1).find('li').slice(0, 3);
+    var $stats = $(body).find('h3:contains("Stats")').next('ul').find('li').slice(0, 3);
     var getCountForIndex = function(idx) {
       try {
-        return parseInt($stats.get(idx).textContent, 10);
+        var text = $stats.get(idx).textContent;
+        var stripped = text.replace(',', '');
+        return parseInt(stripped, 10);
       } catch(e) {
         return 0;
       }
