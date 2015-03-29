@@ -22,10 +22,13 @@ if (program.week) {
   sortBy = 'week';
 }
 
-/**
- * @param  {Package[]} rankedPackages
- */
-function success(rankedPackages) {
+getTopPackages({
+  username: program.args[0],
+  sortBy: sortBy
+},
+function(err, rankedPackages) {
+  if (err) { throw err; }
+
   var table = {};
 
   rankedPackages.forEach(function(p) {
@@ -35,6 +38,4 @@ function success(rankedPackages) {
   console.log(columnify(table, {
     columns: ['Package', 'Downloads over the last ' + sortBy]
   }));
-}
-
-getTopPackages(program.args[0], success, sortBy);
+});

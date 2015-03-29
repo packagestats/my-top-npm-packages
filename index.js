@@ -11,18 +11,28 @@ function Package(options) {
 }
 
 /**
- * @param  {String}   username
+ * @param  {Object}   options
+ * @param  {String}   options.username
+ * @param  {String}   [options.sortBy='month']
  * @param  {Function} cb
- * @param  {String}   [sortBy='month']
  */
-module.exports = function(username, cb, sortBy) {
-  sortBy = sortBy || 'month';
+module.exports = function(options, cb) {
+  if (!options.username) {
+    cb(new Error('username not given'));
+    return;
+  }
 
-  listPackagesForUser(username)
+  options.sortBy = options.sortBy || 'month';
+
+  listPackagesForUser(options.username)
   .then(getCommaSeparatedPackages)
   .then(getCounts)
-  .then(sortCounts.bind(null, sortBy))
-  .done(cb);
+  .then(sortCounts.bind(null, options.sortBy))
+  .then(function(packages) {
+    cb(null, packages);
+  }, function(err) {
+    cb(err);
+  });
 };
 
 function getCommaSeparatedPackages(packages) {
