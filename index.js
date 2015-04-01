@@ -25,8 +25,23 @@ module.exports = function(options, cb) {
   options.sortBy = options.sortBy || 'month';
 
   listPackagesForUser(options.username)
-  .then(getCommaSeparatedPackages)
-  .then(getCounts)
+  .then(function(packageNames) {
+    // Need to fit package names into a single url
+    // so we split the fetching of counts into chunks
+    var sublists = splitListIntoSublistsOfSize(packageNames, 50);
+    var getCountsForSublists = function(sublist) {
+      return getCounts(getCommaSeparatedPackages(sublist));
+    };
+
+    return q.all(sublists.map(getCountsForSublists))
+    .then(function(sets) {
+      var merged = sets.reduce(function(prev, next) {
+        return prev.concat(next);
+      });
+
+      return merged;
+    });
+  })
   .then(sortCounts.bind(null, options.sortBy))
   .then(function(packages) {
     cb(null, packages);
@@ -35,12 +50,36 @@ module.exports = function(options, cb) {
   });
 };
 
+/**
+ * @param  {Object[]} list
+ * @param  {Number} size - The sublist max size
+ * @return {Object[][]}
+ */
+function splitListIntoSublistsOfSize(list, size) {
+  var numTimes = Math.ceil(list.length / size, 10);
+  var sublists = [];
+
+  for (var i = 0; i < numTimes; i++) {
+    sublists.push(list.slice(i*size, (i+1)*size));
+  }
+
+  return sublists;
+}
+
+/**
+ * @param  {Object[]} packages
+ * @return {String}
+ */
 function getCommaSeparatedPackages(packages) {
   return packages.map(function(p) {
     return p.name;
   }).join(',');
 }
 
+/**
+ * @param  {String} commaSepNames
+ * @return {Promise}
+ */
 function getCounts(commaSepNames) {
   var packageNames = commaSepNames.split(',');
   var packageStats = [];
@@ -76,6 +115,7 @@ function getCounts(commaSepNames) {
 
 /**
  * Sorts the given sortByField of the counts in descending order
+ *
  * @param  {String} sortBy
  * @param  {Package[]} packages
  * @return {Package[]} Sorted list of Packages
