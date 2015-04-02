@@ -27,7 +27,10 @@ getTopPackages({
   sortBy: sortBy
 },
 function(err, rankedPackages) {
-  if (err) { throw err; }
+  if (err) {
+    console.log(err.message);
+    return;
+  }
 
   var table = {};
 

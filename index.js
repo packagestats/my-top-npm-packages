@@ -26,6 +26,10 @@ module.exports = function(options, cb) {
 
   listPackagesForUser(options.username)
   .then(function(packageNames) {
+    if (!packageNames || !packageNames.length) {
+      throw new Error('The user ' + options.username + ' doesn\'t exist or has no packages');
+    }
+
     // Need to fit package names into a single url
     // so we split the fetching of counts into chunks
     var sublists = splitListIntoSublistsOfSize(packageNames, 50);
