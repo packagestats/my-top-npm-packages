@@ -16,13 +16,11 @@ function Package(options) {
  * @param  {String}   [options.sortBy='month']
  * @param  {Function} cb
  */
-module.exports = function(options, cb) {
+function getTopPackages(options, cb) {
   if (!options.username) {
     cb(new Error('username not given'));
     return;
   }
-
-  options.sortBy = options.sortBy || 'month';
 
   listPackagesForUser(options.username)
   .then(function(packageNames) {
@@ -51,6 +49,21 @@ module.exports = function(options, cb) {
     cb(null, packages);
   }, function(err) {
     cb(err);
+  });
+};
+
+/**
+ * Sorts the given sortByField of the counts in descending order
+ *
+ * @param  {String} [sortBy=null] - Returns the packages if not given
+ * @param  {Package[]} packages
+ * @return {Package[]} Sorted list of Packages
+ */
+function sortCounts(sortBy, packages) {
+  if (!sortBy || (sortBy && !packages)) { return packages; }
+
+  return packages.sort(function(p1, p2) {
+    return p2.counts[sortBy] - p1.counts[sortBy];
   });
 };
 
@@ -117,15 +130,6 @@ function getCounts(commaSepNames) {
   });
 }
 
-/**
- * Sorts the given sortByField of the counts in descending order
- *
- * @param  {String} sortBy
- * @param  {Package[]} packages
- * @return {Package[]} Sorted list of Packages
- */
-function sortCounts(sortBy, packages) {
-  return packages.sort(function(p1, p2) {
-    return p2.counts[sortBy] - p1.counts[sortBy];
-  });
-};
+module.exports = getTopPackages;
+module.exports.Package = Package;
+module.exports.sortCounts = sortCounts;
