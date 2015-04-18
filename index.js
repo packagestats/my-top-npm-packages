@@ -33,17 +33,17 @@ function getTopPackages(options, cb) {
 };
 
 /**
- * @param  {String} packageNames
+ * @param  {Object[]} packages
  * @return {Promise * Package[]}
  */
-function getCountsForPackages(packageNames) {
-  if (!packageNames || !packageNames.length) {
-    throw new Error('The user ' + options.username + ' doesn\'t exist or has no packages');
+function getCountsForPackages(packages, username) {
+  if (!packages || !packages.length) {
+    throw new Error('No packages found for that user');
   }
 
   // Need to fit package names into a single url
   // so we split the fetching of counts into chunks
-  var sublists = splitListIntoSublistsOfSize(packageNames, 50);
+  var sublists = splitListIntoSublistsOfSize(packages, 50);
   var getCountsForSublists = function(sublist) {
     return getCounts(getCommaSeparatedPackages(sublist));
   };
