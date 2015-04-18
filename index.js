@@ -23,27 +23,7 @@ function getTopPackages(options, cb) {
   }
 
   listPackagesForUser(options.username)
-  .then(function(packageNames) {
-    if (!packageNames || !packageNames.length) {
-      throw new Error('The user ' + options.username + ' doesn\'t exist or has no packages');
-    }
-
-    // Need to fit package names into a single url
-    // so we split the fetching of counts into chunks
-    var sublists = splitListIntoSublistsOfSize(packageNames, 50);
-    var getCountsForSublists = function(sublist) {
-      return getCounts(getCommaSeparatedPackages(sublist));
-    };
-
-    return q.all(sublists.map(getCountsForSublists))
-    .then(function(sets) {
-      var merged = sets.reduce(function(prev, next) {
-        return prev.concat(next);
-      });
-
-      return merged;
-    });
-  })
+  .then(getCountsForPackages)
   .then(sortCounts.bind(null, options.sortBy))
   .then(function(packages) {
     cb(null, packages);
@@ -51,6 +31,32 @@ function getTopPackages(options, cb) {
     cb(err);
   });
 };
+
+/**
+ * @param  {String} packageNames
+ * @return {Promise * Package[]}
+ */
+function getCountsForPackages(packageNames) {
+  if (!packageNames || !packageNames.length) {
+    throw new Error('The user ' + options.username + ' doesn\'t exist or has no packages');
+  }
+
+  // Need to fit package names into a single url
+  // so we split the fetching of counts into chunks
+  var sublists = splitListIntoSublistsOfSize(packageNames, 50);
+  var getCountsForSublists = function(sublist) {
+    return getCounts(getCommaSeparatedPackages(sublist));
+  };
+
+  return q.all(sublists.map(getCountsForSublists))
+  .then(function(sets) {
+    var merged = sets.reduce(function(prev, next) {
+      return prev.concat(next);
+    });
+
+    return merged;
+  });
+}
 
 /**
  * Sorts the given sortByField of the counts in descending order
@@ -133,3 +139,4 @@ function getCounts(commaSepNames) {
 module.exports = getTopPackages;
 module.exports.Package = Package;
 module.exports.sortCounts = sortCounts;
+module.exports.getCountsForPackages = getCountsForPackages;
