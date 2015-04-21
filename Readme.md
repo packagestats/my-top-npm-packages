@@ -10,3 +10,7 @@
 
 * Defaults to showing you the download counts in the last `month`.
 * Other options: `--week` or `--day`
+
+License
+
+GPLv3

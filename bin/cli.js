@@ -35,7 +35,7 @@ function(err, rankedPackages) {
   var table = {};
 
   rankedPackages.forEach(function(p) {
-    table[p.name] = p.counts[sortBy] || 0;
+    table[p.name] = p.counts[sortBy].count || 0;
   });
 
   console.log(columnify(table, {
