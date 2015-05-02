@@ -194,6 +194,8 @@ function getLastDayStats(stats) {
 
   return {
     count: lastDayCount,
+    increased: delta > 0,
+    decreased: delta < 0,
     delta: delta,
     percent: Math.round(percent)
   };
@@ -225,6 +227,8 @@ function getLastWeekStats(stats) {
   return {
     count: lastWeekCount,
     delta: delta,
+    increased: delta > 0,
+    decreased: delta < 0,
     percent: Math.round(percent)
   };
 }
