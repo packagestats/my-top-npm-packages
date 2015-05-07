@@ -79,11 +79,14 @@ function getTopPackages(options, cb) {
 
 /**
  * @param  {Object[]} packages
+ * @param  {Boolean} [isForUser=true] - Whether or not this query is for an npm user
  * @return {Promise * Package[]}
  */
-function getCountsForPackages(packages) {
+function getCountsForPackages(packages, isForUser) {
+  isForUser = typeof isForUser === 'undefined' ? true : isForUser;
+
   if (!packages || !packages.length) {
-    throw new Error('No packages found for that user');
+    throw new Error('No ' + (isForUser ? 'packages' : 'dependents') + ' found for that ' + (isForUser ? 'user' : 'package'));
   }
 
   // Need to fit package names into a single url
@@ -118,6 +121,17 @@ function getCounts(commaSepNames) {
   return getDownloadRange('last-month', commaSepNames)
   .then(function(stats) {
     stats = stats[0];
+
+    // In the case of a single package
+    if (stats.downloads) {
+      var _stats = {};
+
+      _stats[stats.package] = {
+        downloads: stats.downloads
+      };
+
+      stats = _stats;
+    }
 
     return Object.keys(stats).map(function(packageName) {
       var downloads = stats[packageName].downloads;
