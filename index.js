@@ -81,7 +81,7 @@ function getTopPackages(options, cb) {
  * @param  {Object[]} packages
  * @return {Promise * Package[]}
  */
-function getCountsForPackages(packages, username) {
+function getCountsForPackages(packages) {
   if (!packages || !packages.length) {
     throw new Error('No packages found for that user');
   }
