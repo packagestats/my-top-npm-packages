@@ -198,7 +198,7 @@ function getLastDayStats(stats) {
     increased: delta > 0,
     decreased: delta < 0,
     delta: delta,
-    percent: Math.round(percent)
+    percent: Math.round(percent * 100) / 100
   };
 }
 
