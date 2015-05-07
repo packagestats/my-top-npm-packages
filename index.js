@@ -244,7 +244,7 @@ function getLastWeekStats(stats) {
     delta: delta,
     increased: delta > 0,
     decreased: delta < 0,
-    percent: Math.round(percent)
+    percent: Math.round(percent * 100) / 100
   };
 }
 
