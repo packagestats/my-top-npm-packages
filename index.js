@@ -190,7 +190,8 @@ function getLastDayStats(stats) {
   var dayBeforeCount = stats[stats.length - 2].downloads;
 
   var delta = lastDayCount - dayBeforeCount;
-  var percent = delta ? (delta / dayBeforeCount) * 100 : 0;
+  // If the day before is zero, percentage change doesn't make sense
+  var percent = dayBeforeCount ? (delta / dayBeforeCount) * 100 : 0;
 
   return {
     count: lastDayCount,
