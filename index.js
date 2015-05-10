@@ -46,7 +46,7 @@ function Package(options) {
    * The hole filled npm download data
    * @type {Object[]}
    */
-  this.downloads = [];
+  this.downloads = options.downloads || [];
 
   /**
    * Specific period counts (day, week, month)
