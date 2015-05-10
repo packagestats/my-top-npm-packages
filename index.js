@@ -85,6 +85,8 @@ function getTopPackages(options, cb) {
 function getCountsForPackages(packages, isForUser) {
   isForUser = typeof isForUser === 'undefined' ? true : isForUser;
 
+  packages = packages instanceof Array ? packages : [packages];
+
   if (!packages || !packages.length) {
     throw new Error('No stats for that ' + (isForUser ? 'user' : 'package'));
   }
@@ -92,8 +94,10 @@ function getCountsForPackages(packages, isForUser) {
   // Need to fit package names into a single url
   // so we split the fetching of counts into chunks
   var sublists = splitListIntoSublistsOfSize(packages, 50);
+
   var getCountsForSublists = function(sublist) {
-    return getCounts(getCommaSeparatedPackages(sublist));
+    var commaSep = getCommaSeparatedPackages(sublist);
+    return getCounts(commaSep);
   };
 
   return q.all(sublists.map(getCountsForSublists))
