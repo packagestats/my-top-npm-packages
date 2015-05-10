@@ -86,7 +86,7 @@ function getCountsForPackages(packages, isForUser) {
   isForUser = typeof isForUser === 'undefined' ? true : isForUser;
 
   if (!packages || !packages.length) {
-    throw new Error('No ' + (isForUser ? 'packages' : 'dependents') + ' found for that ' + (isForUser ? 'user' : 'package'));
+    throw new Error('No stats for that ' + (isForUser ? 'user' : 'package'));
   }
 
   // Need to fit package names into a single url
