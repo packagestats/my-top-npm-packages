@@ -63,7 +63,7 @@ function Package(options) {
  */
 function getTopPackages(options, cb) {
   if (!options.username) {
-    cb(new Error('username not given'));
+    cb(new Error('npm username not given'));
     return;
   }
 
@@ -88,7 +88,7 @@ function getCountsForPackages(packages, isForUser) {
   packages = packages instanceof Array ? packages : [packages];
 
   if (!packages || !packages.length) {
-    throw new Error('No stats for that ' + (isForUser ? 'user' : 'package'));
+    throw new Error('No stats for that ' + (isForUser ? 'npm username' : 'package'));
   }
 
   // Need to fit package names into a single url
