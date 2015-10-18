@@ -1,4 +1,5 @@
 var q = require('q');
+var debug = require('debug')('my-top-npm-packages');
 var Registry = require('npm-registry');
 var npm = new Registry();
 
@@ -63,16 +64,25 @@ function Package(options) {
  */
 function getTopPackages(options, cb) {
   if (!options.username) {
+    debug('npm username not give');
     cb(new Error('npm username not given'));
     return;
   }
 
+  debug('computing stats for ' + options.username);
+
   listPackagesForUser(options.username)
+  .then(function(packages) {
+    debug('done pulling package list for ' + options.username);
+    return packages;
+  })
   .then(getCountsForPackages)
   .then(sortCounts.bind(null, options.sortBy))
   .then(function(packages) {
+    debug('done getting top packages for ' + options.username);
     cb(null, packages);
   }, function(err) {
+    debug('error: ', err.message || err);
     cb(err);
   });
 };
@@ -87,25 +97,40 @@ function getCountsForPackages(packages, isForUser) {
 
   packages = packages instanceof Array ? packages : [packages];
 
+  // TODO: This should be moved out to earlier in the chain to avoid isForUser
+  // since that's only for the error message
   if (!packages || !packages.length) {
-    throw new Error('No stats for that ' + (isForUser ? 'npm username' : 'package'));
+    var msg = 'No stats for that ' + (isForUser ? 'npm username' : 'package');
+    debug(msg);
+    throw new Error(msg);
   }
+
+  debug('number of packages: ' + packages.length);
 
   // Need to fit package names into a single url
   // so we split the fetching of counts into chunks
+  var chunkSize = 50;
+  debug('splitting packages into chunks of ' + chunkSize);
+
   var sublists = splitListIntoSublistsOfSize(packages, 50);
+  debug('generated ' + sublists.length + ' chunks');
 
   var getCountsForSublists = function(sublist) {
+    debug('generating comma separated package names');
     var commaSep = getCommaSeparatedPackages(sublist);
+
+    debug('getting counts for a batch of ' + sublist.length + ' packages');
     return getCounts(commaSep);
   };
 
   return q.all(sublists.map(getCountsForSublists))
   .then(function(sets) {
+    debug('flattening lists of ' + sets.length + ' results');
     var merged = sets.reduce(function(prev, next) {
       return prev.concat(next);
     });
 
+    debug('flattened into ' + merged.length + ' results');
     return merged;
   });
 }
@@ -122,12 +147,17 @@ function getCounts(commaSepNames) {
   var lastWeekStats = {};
   var lastMonthStats = {};
 
-  return getDownloadRange('last-month', commaSepNames)
+  var query = 'last-month';
+
+  debug('grabbing the ' + query + ' stats for the batch of ' + packageNames.length);
+  return getDownloadRange(query, commaSepNames)
   .then(function(stats) {
+    debug('finished getting the stats for the batch of ' + packageNames.length);
     stats = stats[0];
 
-    // In the case of a single package
+    // In the case of a single package, normalize the format
     if (stats.downloads) {
+      debug('normalizing output for a single package');
       var _stats = {};
 
       _stats[stats.package] = {
@@ -139,8 +169,17 @@ function getCounts(commaSepNames) {
 
     return Object.keys(stats).map(function(packageName) {
       var downloads = stats[packageName].downloads;
+      var oldNumDays = downloads.length;
+      debug('computing stats for package: ' + packageName);
+      debug('number of days in download stats: ' + oldNumDays);
+
+      debug('filling in missing days');
 
       fillInMissingDays(downloads);
+
+      debug('done filling in missing days');
+      debug('number of days in stats: ' + downloads.length);
+      debug('filled in ' + (downloads.length - oldNumDays) + ' days');
 
       return new Package({
         name: packageName,
@@ -211,6 +250,7 @@ function getLastDayStats(stats) {
   // If the day before is zero, percentage change doesn't make sense
   var percent = dayBeforeCount ? (delta / dayBeforeCount) * 100 : 0;
 
+  debug('computed the stats for the last day');
   return {
     count: lastDayCount,
     increased: delta > 0,
@@ -241,8 +281,10 @@ function getLastWeekStats(stats) {
   }));
 
   var delta = lastWeekCount - weekBeforeCount;
-  var percent = (delta / weekBeforeCount) * 100;
+  // If the day before is zero, percentage change doesn't make sense
+  var percent = weekBeforeCount ? (delta / weekBeforeCount) * 100 : 0;
 
+  debug('computed the stats for the last week');
   return {
     count: lastWeekCount,
     delta: delta,
@@ -257,9 +299,12 @@ function getLastMonthStats(stats) {
     return prev + next.downloads;
   }, 0);
 
+  debug('computed the stats for the last month');
+
   return {
     count: count,
     // TODO: Need to fetch the previous month's stats
+    // That will make sense when we pull the year's stats for graphing
     delta: 0,
     percent: 0
   };
