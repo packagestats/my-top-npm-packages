@@ -4,6 +4,8 @@
 
 `npm install -g my-top-npm-packages`
 
+Like this tool? Check out [Package Stats](http://www.packagestats.io)!
+
 ### Usage
 
 `my-top-npm-packages [options] <githubUsername>`

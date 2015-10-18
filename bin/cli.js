@@ -39,6 +39,9 @@ function(err, rankedPackages) {
   });
 
   console.log(columnify(table, {
-    columns: ['Package', 'Downloads over the last ' + sortBy]
+    columns: ['Packages (' + rankedPackages.length + ')', 'Downloads over the last ' + sortBy]
   }));
+
+  console.log('-----');
+  console.log('Like this tool? Check out www.packagestats.io');
 });

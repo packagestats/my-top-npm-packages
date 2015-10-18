@@ -31,6 +31,11 @@ var startOfThisWeek = _startOfThisWeek.format(DAY_FORMAT);
 var startOfLastWeek = _startOfLastWeek.format(DAY_FORMAT);
 
 /**
+ * Optional Redis instance for retrieving package stats from cache
+ */
+var redis;
+
+/**
  * Package structure
  *
  * @param {Object} options
@@ -59,6 +64,7 @@ function Package(options) {
  * @param  {Object}   options
  * @param  {String}   options.username
  * @param  {String}   [options.sortBy='month']
+ * @param  {node-redis} [options.redis={}] Optional Redis instance for retrieving packages from a cache
  * @param  {Function} cb
  */
 function getTopPackages(options, cb) {
@@ -66,6 +72,8 @@ function getTopPackages(options, cb) {
     cb(new Error('npm username not given'));
     return;
   }
+
+  redis = options.redis || null;
 
   listPackagesForUser(options.username)
   .then(getCountsForPackages)
@@ -78,22 +86,29 @@ function getTopPackages(options, cb) {
 };
 
 /**
- * @param  {Object[]} packages
- * @param  {Boolean} [isForUser=true] - Whether or not this query is for an npm user
+ * @param {Object[]} packages
+ * @param {Boolean} [isForUser=true] - Whether or not this query is for an npm user
+ * @param {Redis} [redis] Redis instance for caching
  * @return {Promise * Package[]}
  */
-function getCountsForPackages(packages, isForUser) {
+function getCountsForPackages(packages, isForUser, redisInstance) {
   isForUser = typeof isForUser === 'undefined' ? true : isForUser;
 
   packages = packages instanceof Array ? packages : [packages];
+
+  redis = redis || redisInstance;
 
   if (!packages || !packages.length) {
     throw new Error('No stats for that ' + (isForUser ? 'npm username' : 'package'));
   }
 
+  var results = separateCachedFromUncached(packages);
+  var cachedPackages = results.cached;
+  var uncachedPackages = results.uncached;
+
   // Need to fit package names into a single url
   // so we split the fetching of counts into chunks
-  var sublists = splitListIntoSublistsOfSize(packages, 50);
+  var sublists = splitListIntoSublistsOfSize(uncachedPackages, 50);
 
   var getCountsForSublists = function(sublist) {
     var commaSep = getCommaSeparatedPackages(sublist);
@@ -106,8 +121,55 @@ function getCountsForPackages(packages, isForUser) {
       return prev.concat(next);
     });
 
+    merged.forEach(cachePackage);
+
+    merged = merged.concat(cachedPackages);
+
     return merged;
   });
+}
+
+function separateCachedFromUncached(packages) {
+  var results = {
+    cached: [],
+    uncached: []
+  };
+
+  if (!redis) {
+    results.uncached = packages;
+    return results;
+  }
+
+  packages.forEach(function(p) {
+    console.log('NAME: ', p.name)
+    var cached = getCachedStats(p.name);
+    console.log('cached value: ', cached)
+    if (cached) {
+      console.log('Was in cache: ', p.name)
+      results.cached.push(cached);
+    } else {
+      console.log('Not in cache: ', p.name)
+      results.uncached.push(p.name);
+    }
+  });
+
+  return results;
+}
+
+function getCachedStats(packageName) {
+  // TODO: Way to batch request multiple packages?
+  var cached = redis.get(packageName, function(err, r) {
+    console.log('OH', r)
+  });
+  console.log('Cache get ', packageName, ' val: ', cached)
+  return cached ? JSON.parse(cached) : null;
+}
+
+/** @param {Package} _package */
+function cachePackage(_package) {
+  if (! redis) { return; }
+  console.log('Cached ' + _package.name + ' : ', JSON.stringify(_package))
+  redis.set(_package.name, JSON.stringify(_package));
 }
 
 /**
@@ -122,7 +184,7 @@ function getCounts(commaSepNames) {
   var lastWeekStats = {};
   var lastMonthStats = {};
 
-  return getDownloadRange('last-month', commaSepNames)
+  return getDownloadRange('last-month', packageNames)
   .then(function(stats) {
     stats = stats[0];
 

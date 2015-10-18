@@ -7,7 +7,7 @@
     "my-top-npm-packages": "bin/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jscs -p google bin index.js"
   },
   "repository": {
     "type": "git",
