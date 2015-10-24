@@ -7,7 +7,7 @@
     "my-top-npm-packages": "bin/cli.js"
   },
   "scripts": {
-    "test": "DEBUG=my-top-npm-packages node bin/cli.js mrjoelkemp"
+    "test": "jscs index.js bin/*.js && jshint && DEBUG=my-top-npm-packages node bin/cli.js mrjoelkemp"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
     "sorted"
   ],
   "author": "Joel Kemp <joel@mrjoelkemp.com> (http://www.mrjoelkemp.com/)",
-  "license": "GPLv3",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/mrjoelkemp/my-top-npm-packages/issues"
   },
@@ -33,6 +33,12 @@
     "moment": "~2.10.2",
     "node-tictoc": "~1.1.0",
     "npm-registry": "~0.1.13",
-    "q": "~1.1.2"
+    "object-values": "~1.0.0",
+    "q": "~1.1.2",
+    "string-packer": "~1.0.3"
+  },
+  "devDependencies": {
+    "jscs": "~2.4.0",
+    "jshint": "~2.8.0"
   }
 }
