@@ -31,6 +31,7 @@
     "commander": "~2.6.0",
     "debug": "~2.2.0",
     "moment": "~2.10.2",
+    "node-tictoc": "~1.1.0",
     "npm-registry": "~0.1.13",
     "q": "~1.1.2"
   }

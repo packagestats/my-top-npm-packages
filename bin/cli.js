@@ -22,6 +22,9 @@ if (program.week) {
   sortBy = 'week';
 }
 
+var timer = require('node-tictoc');
+timer.tic();
+
 getTopPackages({
   username: program.args[0],
   sortBy: sortBy
@@ -41,4 +44,7 @@ function(err, rankedPackages) {
   console.log(columnify(table, {
     columns: ['Package', 'Downloads over the last ' + sortBy]
   }));
+
+  console.log('---');
+  timer.toc();
 });
