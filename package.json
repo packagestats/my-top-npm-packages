@@ -32,7 +32,7 @@
     "debug": "~2.2.0",
     "moment": "~2.10.2",
     "node-tictoc": "~1.1.0",
-    "npm-registry": "~0.1.13",
+    "npm-registry": "git@github.com:mrjoelkemp/npmjs.git",
     "object-values": "~1.0.0",
     "q": "~1.1.2",
     "string-packer": "~1.0.3"
