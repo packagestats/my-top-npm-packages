@@ -34,7 +34,6 @@ function(err, rankedPackages) {
     console.log(err.message);
     return;
   }
-
   var table = {};
 
   rankedPackages.forEach(function(p) {
