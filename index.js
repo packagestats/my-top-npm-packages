@@ -159,10 +159,7 @@ function getCounts(stats) {
     var downloads = stats[packageName].downloads;
     var oldNumDays = downloads.length;
 
-    // Avoid unnecessary filling
-    if (downloads.length < 30) {
-      fillInMissingDays(downloads);
-    }
+    fillInMissingDays(downloads);
 
     debug(packageName + ': days: ' + oldNumDays +
           ' | filled ' + (downloads.length - oldNumDays) + ' days');
