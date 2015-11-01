@@ -1,6 +1,6 @@
 {
   "name": "my-top-npm-packages",
-  "version": "3.2.4",
+  "version": "3.2.5",
   "description": "Get your top npm packages, ranked by downloads",
   "main": "index.js",
   "bin": {
